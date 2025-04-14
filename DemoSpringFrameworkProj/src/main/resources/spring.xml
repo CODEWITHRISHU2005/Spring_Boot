@@ -1,0 +1,38 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<!--    <bean id="emp" class="com.SpringFramework.Employee" scope = "singleton">-->
+<!--    <bean id="emp" class="com.SpringFramework.Employee" scope = "prototype">-->
+<!--    <bean id="emp" class="com.SpringFramework.Employee" autowire="byName">-->
+
+    <bean id="emp" class="com.SpringFramework.Employee" autowire="byType">
+        <!--		<constructor-arg value="21"></constructor-arg>
+		<constructor-arg ref="lap1"></constructor-arg> -->
+
+        <!--		<constructor-arg type="com.SpringFramework.Laptop" ref="lap1"/>
+                <constructor-arg type="int" value="21"/> -->
+
+        <!--		<constructor-arg index="1" ref="lap1"/>
+                <constructor-arg index="0" value="21"/> -->
+
+        <!--        <constructor-arg name="lap" ref="laptop"/>-->
+        <!--        <constructor-arg name="age" value="19"/>-->
+
+        <property name="age" value="20"/>
+<!--            <property name="com" ref="com2"/>-->
+
+    <!--    <bean id="emp2" class="com.SpringFramework.Employee">-->
+    <!--    </bean>-->
+
+    <!--    <bean id="laptop" class="com.SpringFramework.Laptop">-->
+    <!--    </bean>-->
+
+        </bean>
+        <bean class="com.SpringFramework.Laptop" primary="true">
+        </bean>
+
+        <bean id="com2" class="com.SpringFramework.Desktop" lazy-init="true">
+        </bean>
+</beans>
