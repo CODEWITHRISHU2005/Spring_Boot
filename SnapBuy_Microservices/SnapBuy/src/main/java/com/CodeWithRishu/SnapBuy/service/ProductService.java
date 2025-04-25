@@ -25,36 +25,41 @@ public class ProductService {
         return productRepository.findById(id).orElse(null);
     }
 
-    public Product addProduct(Product product, MultipartFile image) throws IOException {
-        if (image != null && !image.isEmpty()) {
-            product.setImageData(image.getBytes());
-            product.setImageType(image.getContentType());
+    public Product addProduct(Product product, List<MultipartFile> image) throws IOException {
+        MultipartFile imageFile = image.getFirst();
+        if (!image.isEmpty()) {
+            product.setImageData(imageFile.getBytes());
+            product.setImageType(imageFile.getContentType());
         }
         product.setProductAvailable(true);
         product.setStockQuantity(100);
         product.setReleaseDate(new java.util.Date());
-        product.setImageName(image.getOriginalFilename());
-        product.setImageType(image.getContentType());
+        product.setImageName(imageFile.getOriginalFilename());
+        product.setImageType(imageFile.getContentType());
         product.setProductAvailable(true);
+
         return productRepository.save(product);
     }
 
-    public Product updateProduct(int id, Product product, MultipartFile imageFile) throws IOException {
+    public Product updateProduct(int id, Product product, List<MultipartFile> imageFile) throws IOException {
         Product existingProduct = productRepository.findById(id).orElse(null);
         if (existingProduct != null) {
-            existingProduct.setName(product.getName());
+//            existingProduct.setName(product.getName());
 //            existingProduct.setDescription(product.getDescription());
 //            existingProduct.setBrand(product.getBrand());
-            existingProduct.setPrice(product.getPrice());
+//            existingProduct.setPrice(product.getPrice());
 //            existingProduct.setCategory(product.getCategory());
 //            existingProduct.setReleaseDate(product.getReleaseDate());
 //            existingProduct.setStockQuantity(product.getStockQuantity());
+//            existingProduct.setProductAvailable(product.isProductAvailable());
 
             if (imageFile != null && !imageFile.isEmpty()) {
-                existingProduct.setImageData(imageFile.getBytes());
-                existingProduct.setImageType(imageFile.getContentType());
-                existingProduct.setImageName(imageFile.getOriginalFilename());
+                MultipartFile imageFiles = imageFile.getFirst();
+                existingProduct.setImageData(imageFiles.getBytes());
+                existingProduct.setImageType(imageFiles.getContentType());
+                existingProduct.setImageName(imageFiles.getOriginalFilename());
             }
+
             return productRepository.save(existingProduct);
         }
 

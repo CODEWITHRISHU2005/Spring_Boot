@@ -8,11 +8,11 @@
 		<version>3.4.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.CodeWithRishu</groupId>
-	<artifactId>Service_Registory</artifactId>
+	<groupId>com.Tech_Sprint-48</groupId>
+	<artifactId>API_Gateway</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Service_Registory</name>
-	<description>Demo project for Microservices</description>
+	<name>API_Gateway</name>
+	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -32,12 +32,12 @@
 	</properties>
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-gateway-mvc</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>
 
 		<dependency>

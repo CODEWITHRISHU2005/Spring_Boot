@@ -3,7 +3,6 @@ package com.CodeWithRishu.SnapBuy.controller;
 import com.CodeWithRishu.SnapBuy.model.Product;
 import com.CodeWithRishu.SnapBuy.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.config.Profiles;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,29 +25,27 @@ public class ProductController {
     }
 
     @GetMapping("/product/{id}")
-    public ResponseEntity<List<Product>> getProductsById(@PathVariable int id) {
+    public ResponseEntity<Product> getProductById(@PathVariable int id) {
         Product product = productService.getProductsById(id);
-        if (product != null) {
-            return new ResponseEntity<>(List.of(product), HttpStatus.OK);
+        if (product.getId() > 0) {
+            return new ResponseEntity<>(product, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-    @GetMapping("product/{productId}/image")
+    @GetMapping("/product/{productId}/image")
     public ResponseEntity<byte[]> getProductImage(@PathVariable int productId) {
         Product product = productService.getProductsById(productId);
-        if (product != null && product.getImageData() != null) {
-            return ResponseEntity.ok()
-                    .header("Content-Type", product.getImageType())
-                    .body(product.getImageData());
+        if (product.getId() > 0) {
+            return new ResponseEntity<>(product.getImageData(), HttpStatus.OK);
         } else {
-            return ResponseEntity.notFound().build();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
     @PostMapping("/product")
-    public ResponseEntity<?> addProduct(@RequestPart("product") Product product, @RequestPart("imageFile") MultipartFile imageFile) throws IOException {
+    public ResponseEntity<?> addProduct(@RequestPart("product") Product product, @RequestPart("imageFile") List<MultipartFile> imageFile) throws IOException {
         Product savedProduct = null;
         try {
             savedProduct = productService.addProduct(product, imageFile);
@@ -59,7 +56,9 @@ public class ProductController {
     }
 
     @PutMapping("/product/{id}")
-    public ResponseEntity<String> updateProduct(@PathVariable int id, @RequestPart("product") Product product, @RequestPart("imageFile") MultipartFile imageFile) {
+    public ResponseEntity<String> updateProduct(@PathVariable int id,
+                                                @RequestPart("product") Product product,
+                                                @RequestPart("imageFile") List<MultipartFile> imageFile) {
         Product updatedProduct = null;
         try {
             updatedProduct = productService.updateProduct(id, product, imageFile);
