@@ -15,11 +15,13 @@ import lombok.NoArgsConstructor;
 public class Medicine {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
-    private String brand;
+    private Long medicineId;
+    private String brandName; // hole mark by manufacturer
+    private String genericName; // general name
     private String description;
-    private String genericEquivalent;
-    private double price;
+    private String dosageForm;
+    private String strength;
+    private String sideEffects;
+    private String efficacyRating;
+    private String userReviewScore;
 }

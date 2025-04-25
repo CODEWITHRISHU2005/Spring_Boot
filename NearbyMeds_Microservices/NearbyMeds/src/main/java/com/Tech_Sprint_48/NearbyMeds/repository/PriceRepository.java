@@ -1,9 +1,9 @@
 package com.Tech_Sprint_48.NearbyMeds.repository;
 
-import com.Tech_Sprint_48.NearbyMeds.model.Pharmacy;
+import com.Tech_Sprint_48.NearbyMeds.model.Price;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PharmacyRepository extends JpaRepository<Pharmacy, Long> {
+public interface PriceRepository extends JpaRepository<Price, Long> {
 }
