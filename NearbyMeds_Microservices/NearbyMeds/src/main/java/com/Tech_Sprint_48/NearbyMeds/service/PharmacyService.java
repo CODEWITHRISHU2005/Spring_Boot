@@ -17,7 +17,8 @@ public class PharmacyService {
     public List<Pharmacy> getAllPharmacies() {
     }
 
-    public List<Pharmacy> getNearbyPharmacies(double latitude, double longitude) {
+    public List<Pharmacy> getNearbyPharmacies(double latitude, double longitude, double radius) {
+        return pharmacyRepository.findNearbyPharmacies(latitude, longitude, radius);
     }
 
     public Pharmacy getPharmacyById(Long pharmacyId) {

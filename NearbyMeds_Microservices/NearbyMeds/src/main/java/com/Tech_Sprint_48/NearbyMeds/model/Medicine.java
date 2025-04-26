@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -13,8 +15,7 @@ public class Medicine {
 
     @Id
     private Long medicineId;
-    private String brandName; // hole mark by manufacturer
-    private String genericName; // general name
+    private String brandedMedicine;
     private String description;
     private String dosageForm;
     private String strength;
@@ -24,4 +25,8 @@ public class Medicine {
 
     @OneToMany(mappedBy = "medicine")
     private List<Price> prices;
+
+    @ManyToOne
+    @JoinColumn(name = "generic_name_id", referencedColumnName = "genericNameId", nullable = false)
+    private GenericMedicine genericMedicine;
 }

@@ -35,8 +35,10 @@ public class PharmacyController {
     }
 
     @GetMapping("nearby")
-    public ResponseEntity<List<Pharmacy>> getNearbyPharmacies(@RequestParam double latitude, @RequestParam double longitude) {
-        List<Pharmacy> pharmacies = pharmacyService.getNearbyPharmacies(latitude, longitude);
+    public ResponseEntity<List<Pharmacy>> getNearbyPharmacies(@RequestParam double latitude,
+                                                              @RequestParam double longitude,
+                                                              @RequestParam double radians) {
+        List<Pharmacy> pharmacies = pharmacyService.getNearbyPharmacies(latitude, longitude, radians);
         if (pharmacies.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
