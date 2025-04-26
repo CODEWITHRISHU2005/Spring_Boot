@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/prices")
 public class PriceController {
 
-    @GetMapping("/all)
+    @GetMapping("/all")
     public ResponseEntity<String> getAllPrices() {
+
     }
 }

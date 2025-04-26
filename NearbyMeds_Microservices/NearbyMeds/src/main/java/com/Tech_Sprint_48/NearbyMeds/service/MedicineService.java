@@ -21,7 +21,11 @@ public class MedicineService {
         return medicineRepository.findAll();
     }
 
-    public List<Medicine> searchProducts(String keyword) {
-        return medicineRepository.searchByKeyword(keyword);
+    public List<Medicine> searchMedicines(String keyword) {
+        return medicineRepository.searchMedicineByKeyword(keyword);
+    }
+
+    public Medicine getMedicineById(Long medicineId) {
+        return medicineRepository.findById(medicineId).orElse(null);
     }
 }

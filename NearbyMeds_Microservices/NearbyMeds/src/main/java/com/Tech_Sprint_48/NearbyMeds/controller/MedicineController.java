@@ -15,7 +15,7 @@ public class MedicineController {
     @Autowired
     private MedicineService medicineService;
 
-    @GetMapping("/all/medicines")
+    @GetMapping("/all")
     public ResponseEntity<List<Medicine>> getAllMedicines() {
         List<Medicine> medicines = medicineService.getAllMedicines();
         if (medicines.isEmpty()) {
@@ -24,11 +24,19 @@ public class MedicineController {
         return new ResponseEntity<>(medicines, HttpStatus.OK);
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<Medicine>> searchProducts(@RequestParam String keyword) {
-        List<Medicine> medicines = medicineService.searchProducts(keyword);
-        return new ResponseEntity<>(medicines, HttpStatus.OK);
+    @GetMapping("/{medicineId}")
+    public ResponseEntity<Medicine> getMedicineById(@PathVariable Long medicineId) {
+        Medicine medicine = medicineService.getMedicineById(medicineId);
+        if (medicine == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(medicine, HttpStatus.OK);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<Medicine>> searchMedicines(@RequestParam String keyword) {
+        List<Medicine> medicines = medicineService.searchMedicines(keyword);
+        return new ResponseEntity<>(medicines, HttpStatus.OK);
+    }
 
 }

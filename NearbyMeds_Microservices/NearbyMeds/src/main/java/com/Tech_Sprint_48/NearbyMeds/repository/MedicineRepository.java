@@ -13,5 +13,5 @@ public interface MedicineRepository extends JpaRepository<Medicine, Long> {
     List<Medicine> findByNameContainingIgnoreCase(String name);
 
     @Query("SELECT m FROM Medicine m JOIN m.pharmacies p WHERE p.pharmacyId = ?1")
-    List<Medicine> searchByKeyword(String keyword);
+    List<Medicine> searchMedicineByKeyword(String keyword);
 }
