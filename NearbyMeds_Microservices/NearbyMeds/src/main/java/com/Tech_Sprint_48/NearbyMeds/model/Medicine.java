@@ -15,7 +15,7 @@ public class Medicine {
 
     @Id
     private Long medicineId;
-    private String brandedMedicine;
+    private String name;
     private String description;
     private String dosageForm;
     private String strength;
@@ -23,10 +23,15 @@ public class Medicine {
     private String efficacyRating;
     private String userReviewScore;
 
-    @OneToMany(mappedBy = "medicine")
-    private List<Price> prices;
+    @ManyToMany
+    @JoinTable(
+            name = "medicine_pharmacy",
+            joinColumns = @JoinColumn(name = "medicine_id"),
+            inverseJoinColumns = @JoinColumn(name = "pharmacy_id")
+    )
+    private List<Pharmacy> pharmacies;
 
     @ManyToOne
     @JoinColumn(name = "generic_name_id", referencedColumnName = "genericNameId", nullable = false)
-    private GenericMedicine genericMedicine;
+    private GenericMedicine genericMedicineName;
 }

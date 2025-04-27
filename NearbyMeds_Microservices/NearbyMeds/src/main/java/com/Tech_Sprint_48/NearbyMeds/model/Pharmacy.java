@@ -37,6 +37,6 @@ public class Pharmacy {
     private String servicesOffered;
     private String specialties;
 
-    @OneToMany(mappedBy = "pharmacy")
-    private List<Price> prices;
+    @ManyToMany(mappedBy = "pharmacies")
+    private List<Medicine> medicines;
 }

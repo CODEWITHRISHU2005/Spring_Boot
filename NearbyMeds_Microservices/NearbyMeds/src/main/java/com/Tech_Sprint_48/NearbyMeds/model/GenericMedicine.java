@@ -19,6 +19,6 @@ public class GenericMedicine {
 
     private String genericMedicine;
 
-    @OneToMany(mappedBy = "genericMedicine")
+    @OneToMany(mappedBy = "genericMedicineName")
     private List<Medicine> medicines;
 }

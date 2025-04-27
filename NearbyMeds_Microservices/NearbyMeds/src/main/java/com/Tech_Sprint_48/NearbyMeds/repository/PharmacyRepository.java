@@ -10,9 +10,12 @@ import java.util.List;
 @Repository
 public interface PharmacyRepository extends JpaRepository<Pharmacy, Long> {
 
-    @Query("SELECT p FROM Pharmacy p WHERE p.pharmacyId = ?1" +
-           " AND (6371 * acos(cos(radians(?2)) * cos(radians(p.latitude))" +
-           " * cos(radians(p.longitude) - radians(?3)) + sin(radians(?2))" +
-           " * sin(radians(p.latitude)))) <= ?4")
+    @Query(value = "SELECT p.*, " +
+            "(6371 * acos(cos(radians(:latitude)) * cos(radians(p.latitude)) * " +
+            "cos(radians(p.longitude) - radians(:longitude)) + sin(radians(:latitude)) * sin(radians(p.latitude)))) AS distance " +
+            "FROM pharmacy p " +
+            "HAVING distance < :radius " +
+            "ORDER BY distance",
+            nativeQuery = true)
     List<Pharmacy> findNearbyPharmacies(double latitude, double longitude, double radius);
 }
