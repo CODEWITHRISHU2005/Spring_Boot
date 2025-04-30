@@ -39,20 +39,52 @@ public class MedicineController {
         return new ResponseEntity<>(medicines, HttpStatus.OK);
     }
 
-    @GetMapping("/medicines/version")
-    public int getDataVersion() {
-        return medicineService.getDataVersion();
-    }
-
     @PostMapping("/{medicineId}/rating")
     public ResponseEntity<Medicine> addRating(
             @PathVariable Long medicineId,
-            @RequestParam Double rating) {
-        Medicine updatedMedicine = medicineService.addRating(medicineId, rating);
+            @RequestParam int rating) {
+        Medicine ratings = medicineService.getMedicineById(medicineId);
+        if (ratings == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        if (rating < 1 || rating > 5) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(ratings, HttpStatus.OK);
+    }
+
+    @GetMapping("{medicineId}/rating")
+    public ResponseEntity<String> getRating(@PathVariable Long medicineId) {
+        Medicine medicine = medicineService.getMedicineById(medicineId);
+        if (medicine == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        String rating = medicine.getMedicineRating();
+        if (rating == null || rating.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(rating, HttpStatus.OK);
+    }
+
+    @PostMapping("/{medicineId}/review")
+    public ResponseEntity<Medicine> addReview(
+            @PathVariable Long medicineId,
+            @RequestParam String review) {
+        Medicine updatedMedicine = medicineService.addReview(medicineId, review);
         if (updatedMedicine == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(updatedMedicine, HttpStatus.OK);
+    }
+
+    @GetMapping("/{medicineId}/review")
+    public ResponseEntity<List<String>> getReviews(@PathVariable Long medicineId) {
+        Medicine medicine = medicineService.getMedicineById(medicineId);
+        List<String> reviews = medicine.getMedicineReviews();
+        if (reviews == null || reviews.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(reviews, HttpStatus.OK);
     }
 
 }

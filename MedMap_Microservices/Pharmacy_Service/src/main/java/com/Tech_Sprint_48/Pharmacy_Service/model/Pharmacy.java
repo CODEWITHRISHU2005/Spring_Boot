@@ -20,10 +20,6 @@ public class Pharmacy {
     private String address;
     private String phoneNumber;
     private String email;
-    private String pharmacyImageName;
-    private String pharmacyImageType;
-    @Lob
-    private byte[] pharmacyImageData;
     private String latitude;
     private String longitude;
     private String openingHours;
@@ -35,6 +31,7 @@ public class Pharmacy {
     private String servicesOffered;
     private String specialties;
 
-    @OneToMany(mappedBy = "pharmacy")
-    private List<PharmacyReview> reviews;
+    @ElementCollection
+    private List<String> pharmacyReviews;
+    private int pharmacyRating;
 }

@@ -20,6 +20,8 @@ public class Medicine {
     private String dosageForm;
     private String strength;
     private String sideEffects;
-    private String efficacyRating;
-    private String userReviewScore;
+    private String medicineRating;
+
+    @ElementCollection
+    private List<String> medicineReviews;
 }
