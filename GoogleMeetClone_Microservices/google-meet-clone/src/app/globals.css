@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.5rem;
+
+    /* Google Meet specific colors */
+    --google-blue: 210 100% 50%;
+    --google-teal: 174 72% 47%;
+    --google-dark-gray: 213 18% 29%;
+    --google-light-gray: 0 0% 95%;
+    --google-red: 359 76% 59%;
+    --google-yellow: 44 100% 50%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+
+    /* Google Meet dark mode specific colors */
+    --google-blue: 210 100% 60%;
+    --google-teal: 174 72% 57%;
+    --google-dark-gray: 213 18% 79%;
+    --google-light-gray: 0 0% 25%;
+    --google-red: 359 76% 69%;
+    --google-yellow: 44 100% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-google-sans-text);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-google-sans);
+    @apply font-medium tracking-tight;
+  }
+}
+
+/* Custom utility classes for Google Meet */
+@layer utilities {
+  .google-container {
+    @apply container mx-auto px-4 md:px-6 max-w-7xl;
+  }
+
+  .btn-primary {
+    @apply bg-[#1a73e8] text-white hover:bg-[#1967d2] transition-colors dark:bg-[#4285f4] dark:hover:bg-[#5e97f6];
+  }
+
+  .btn-outline {
+    @apply border border-[#dadce0] hover:bg-[#f1f3f4] transition-colors dark:border-gray-700 dark:hover:bg-gray-800;
+  }
+}
+
+/* React DayPicker styles */
+.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: #1a73e8;
+  --rdp-background-color: #e6f1ff;
+  --rdp-accent-color-dark: #4285f4;
+  --rdp-background-color-dark: #344054;
+  --rdp-outline: 2px solid var(--rdp-accent-color);
+  --rdp-outline-selected: 2px solid var(--rdp-accent-color);
+  margin: 1rem 0;
+}
+
+.dark .rdp {
+  --rdp-accent-color: var(--rdp-accent-color-dark);
+  --rdp-background-color: var(--rdp-background-color-dark);
+}
+
+.rdp-months {
+  display: flex;
+  justify-content: center;
+}
+
+.rdp-month {
+  margin: 0 1rem;
+}
+
+.rdp-month_name {
+  color: hsl(var(--foreground));
+  font-weight: 500;
+  font-size: 0.875rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.rdp-day_selected,
+.rdp-day_selected:focus-visible,
+.rdp-day_selected:hover {
+  background-color: var(--rdp-accent-color);
+  color: white;
+}
+
+.rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+  background-color: hsl(var(--secondary));
+}
+
+.dark .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+  background-color: hsl(var(--muted));
+}
