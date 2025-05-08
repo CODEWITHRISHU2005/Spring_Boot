@@ -18,7 +18,7 @@ export function EventCard({ event, type = 'event' }: EventCardProps) {
         {/* Event Image */}
         <div className="relative aspect-[3/2]">
           <Image
-            src={image}
+            src={`/images/${image}`}
             alt={title}
             fill
             className="object-cover"

@@ -2,6 +2,11 @@ import { SectionContainer } from '@/components/home/SectionContainer';
 import { MovieCard } from '@/components/movies/MovieCard';
 import { EventCard } from '@/components/home/EventCard';
 import { movies, events, activities } from '@/data/mock-data';
+import Image from 'next/image';
+import React from 'react';
+import { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+const inter = Inter({ subsets: ['latin'] });
 
 export default function Home() {
   return (
@@ -9,6 +14,15 @@ export default function Home() {
       {/* Hero Banner */}
       <div className="bg-gradient-to-r from-red-600 to-red-700 py-20 text-white">
         <div className="bms-container text-center">
+          {/* Logo at Top-Left */}
+          <div className="absolute top-0 left-0">
+            <Image
+              src="images/BookMySpot.png" // Path relative to the public folder
+              alt="BookMySpot Logo"
+              width={120} // Adjust width as needed
+              height={60} // Adjust height as needed
+            />
+          </div>
           <h1 className="text-4xl font-bold mb-4">Book Your Entertainment</h1>
           <p className="text-xl max-w-2xl mx-auto">
             Movies, Events, Plays, Sports & More. Experience the best of entertainment with BookMyShow.

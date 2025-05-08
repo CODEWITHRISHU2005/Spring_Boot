@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<header>
+    <div class="container">
+        <nav>
+            <ul>
+                <li><a th:href="@{/movies}">Movies</a></li>
+                <li><a th:href="@{/theaters}">Theaters</a></li>
+                <li><a th:href="@{/shows}">Shows</a></li>
+                <li><a th:href="@{/contact}">Contact</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+<main>
+    <div class="container">
+        <h1>Welcome to BookMyShow</h1>
+        <p>Your one-stop solution for booking movie tickets online.</p>
+        <a class="btn" th:href="@{/movies}">Book Now</a>
+    </div>
+</main>
+<footer>
+    <div class="container">
+        <p>&copy; 2023 BookMyShow. All rights reserved.</p>
+    </div>
+</footer>
+</body>
+
+</html>

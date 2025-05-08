@@ -41,11 +41,23 @@ export default function Page() {
                   Java Backend Developer
                 </h1>
                 <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-                I am a passionate Spring Boot developer specializing in building scalable backend systems, 
-                integrating security frameworks like JWT and OAuth2, and optimizing data processing with Java Streams. 
-                With experience in microservices architecture, API development, and e-commerce platforms, I strive to create efficient, secure, and high-performance applications. Constantly exploring emerging technologies like WebRTC and AI-powered tools, 
-                I aim to enhance user experiences and drive innovation. Let's connect and collaborate on impactful solutions!
+                  I am a passionate Spring Boot developer specializing in building scalable backend systems,
+                  integrating security frameworks like JWT and OAuth2, and optimizing data processing with Java Streams.
+                  With experience in microservices architecture, API development, and e-commerce platforms, I strive to create efficient, secure, and high-performance applications. Constantly exploring emerging technologies like WebRTC and AI-powered tools,
+                  I aim to enhance user experiences and drive innovation. Let's connect and collaborate on impactful solutions!
                 </p>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="relative w-32 h-32">
+                  <img
+                    alt="Rishabh Gupta"
+                    src="/images/1729538178966.jpeg"
+                    className="rounded-full w-32 h-32 object-cover shadow-lg"
+                  />
+                </div>
+                <span className="mt-2 text-gray-800 dark:text-gray-200 font-bold text-sm">
+                  Rishabh Gupta
+                </span>
               </div>
               <div className="space-x-4">
                 <Link href="https://github.com/" target="_blank">
@@ -84,35 +96,35 @@ export default function Page() {
               <ProjectCard
                 title="Book-My-Spot"
                 description="A movie ticket booking web application where users can book tickets for movies, built with Spring Boot and React."
-                image="/placeholder.svg?height=400&width=600"
+                image="/images/Screenshot 2025-05-08 124204.png"
                 link="https://github.com/CODEWITHRISHU2005/Spring_Boot/tree/main/BookMySpot_Microservices"
                 tags={["Next.js", "React.js", "TypeScript", "Spring Boot", "Spring Security", "Spring Cloud", "O-Auth2", "PostgreSQL", "MySQL", "Redis", "RabbitMQ", "Docker", "CI/CD", "Microservices"]}
               />
               <ProjectCard
                 title="Google-Meet Clone"
                 description="The project aims to develop a video conferencing application inspired by Google Meet, utilizing Spring Boot microservices architecture and WebRTC technology for real-time communication."
-                image="/placeholder.svg?height=400&width=600"
+                image="/images/Screenshot 2025-05-05 094216.png"
                 link="https://github.com/CODEWITHRISHU2005/Spring_Boot/tree/main/GoogleMeetClone_Microservices"
                 tags={["React.js", "Next.js", "TypeScript", "Spring Cloud", "Spring Boot", "Spring Security", "O-Auth2", "WebRTC", "WebSocket", "PostgreSQL", "MySQL", "Redis", "RabbitMQ", "Docker", "CI/CD", "Microservices"]}
               />
               <ProjectCard
                 title="AI Chat Interface"
                 description="An AI-powered chat interface with natural language processing capabilities comparing different LLM models to test accuracy of different models."
-                image="/placeholder.svg?height=400&width=600"
+                image="/images/Screenshot 2025-05-05 185527.png"
                 link="https://github.com/CODEWITHRISHU2005/Spring_Boot/tree/main/FlashGPT_4.5"
                 tags={["OpenAI", "Anthropic", "Ollama", "Mistral", "Meta", "Next.js", "TailwindCSS", "React.js", "Spring Boot", "Spring-AI", "Java"]}
               />
               <ProjectCard
                 title="Snap-Buy"
                 description="A full-stack e-commerce platform built with Spring Boot, MySQL, Node.js and React."
-                image="/placeholder.svg?height=400&width=600"
+                image="/images/Screenshot 2025-04-09 215254.png"
                 link="https://github.com/CODEWITHRISHU2005/Spring_Boot/tree/main/RestQuickHire"
                 tags={["Spring Boot", "Java", "MySQL", "Node.js", "React.js", "TailwindCSS"]}
               />
               <ProjectCard
                 title="Task Management App"
                 description="A real-time task management application with new Java Vaddin Framework use to create UI in Java."
-                image="/placeholder.svg?height=400&width=600"
+                image="/images/Screenshot 2025-05-01 230109.png"
                 link="https://github.com/CODEWITHRISHU2005/Spring_Boot/tree/main/Task_Manager/.vscode"
                 tags={["Vaadin", "Spring Boot", "Java", "PostgreSQL"]}
               />
