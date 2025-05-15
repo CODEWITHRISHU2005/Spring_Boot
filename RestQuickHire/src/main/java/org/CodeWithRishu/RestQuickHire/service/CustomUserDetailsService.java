@@ -1,8 +1,8 @@
 package org.CodeWithRishu.RestQuickHire.service;
 
 import org.CodeWithRishu.RestQuickHire.model.User;
-import org.CodeWithRishu.RestQuickHire.model.UserPrincipal;
 import org.CodeWithRishu.RestQuickHire.repository.UserRepository;
+import org.CodeWithRishu.RestQuickHire.service.MyUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MyUserDetailsService implements UserDetailsService {
+public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
     private UserRepository repo;
@@ -21,6 +21,6 @@ public class MyUserDetailsService implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException("User not found");
         }
-        return new UserPrincipal(user);
+        return new MyUserDetails(user);
     }
 }
