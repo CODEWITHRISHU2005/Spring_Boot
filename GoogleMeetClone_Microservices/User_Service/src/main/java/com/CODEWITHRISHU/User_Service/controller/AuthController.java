@@ -23,7 +23,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody User loginRequest) {
+    public ResponseEntity<String> loginUser(@RequestBody User loginRequest) throws Exception {
         String token = authService.loginUser(loginRequest.getUsername(), loginRequest.getPassword());
         return ResponseEntity.ok(token); // Return JWT token
     }
