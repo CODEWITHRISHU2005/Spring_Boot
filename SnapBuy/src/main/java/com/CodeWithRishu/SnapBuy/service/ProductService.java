@@ -44,14 +44,14 @@ public class ProductService {
     public Product updateProduct(int id, Product product, List<MultipartFile> imageFile) throws IOException {
         Product existingProduct = productRepository.findById(id).orElse(null);
         if (existingProduct != null) {
-//            existingProduct.setName(product.getName());
-//            existingProduct.setDescription(product.getDescription());
-//            existingProduct.setBrand(product.getBrand());
-//            existingProduct.setPrice(product.getPrice());
-//            existingProduct.setCategory(product.getCategory());
-//            existingProduct.setReleaseDate(product.getReleaseDate());
-//            existingProduct.setStockQuantity(product.getStockQuantity());
-//            existingProduct.setProductAvailable(product.isProductAvailable());
+            existingProduct.setName(product.getName());
+            existingProduct.setDescription(product.getDescription());
+            existingProduct.setBrand(product.getBrand());
+            existingProduct.setPrice(product.getPrice());
+            existingProduct.setCategory(product.getCategory());
+            existingProduct.setReleaseDate(product.getReleaseDate());
+            existingProduct.setStockQuantity(product.getStockQuantity());
+            existingProduct.setProductAvailable(product.isProductAvailable());
 
             if (imageFile != null && !imageFile.isEmpty()) {
                 MultipartFile imageFiles = imageFile.getFirst();
