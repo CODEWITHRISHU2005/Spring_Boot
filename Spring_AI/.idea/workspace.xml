@@ -5,21 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7f34dee6-4aa8-41d5-89e4-db820edf202b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../Stripe_Payment/src/main/java/com/CodeWithRishu/Stripe_Payment/service/StripeService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../WebSocketDemo/src/main/java/com/CODEWITHRISHU/WebSocketDemo/config/WebSocketConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../WebSocketDemo/src/main/java/com/CODEWITHRISHU/WebSocketDemo/controller/NotificationController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../WebSocketDemo/src/main/java/com/CODEWITHRISHU/WebSocketDemo/controller/OrderNotificationController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../WebSocketDemo/src/main/java/com/CODEWITHRISHU/WebSocketDemo/controller/OrderUpdate.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../WebSocketDemo/src/main/resources/templates/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../WebSocketDemo/src/main/resources/templates/index_user.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../WebSocketDemo/src/main/resources/templates/order-user-client.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../WebSocketDemo/src/main/resources/templates/order.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OTTDemo/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../OTTDemo/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Stripe_Payment/src/main/java/com/CodeWithRishu/Stripe_Payment/controller/ProductCheckoutController.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Stripe_Payment/src/main/java/com/CodeWithRishu/Stripe_Payment/controller/ProductCheckoutController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Stripe_Payment/src/main/java/com/CodeWithRishu/Stripe_Payment/dto/StripeResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Stripe_Payment/src/main/java/com/CodeWithRishu/Stripe_Payment/dto/StripeResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Stripe_Payment/src/main/java/com/CodeWithRishu/Stripe_Payment/service/StripeSerivice.java" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
