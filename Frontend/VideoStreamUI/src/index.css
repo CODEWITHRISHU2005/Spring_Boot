@@ -1,0 +1,224 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===================================== */
+/* Global Theme Variables & Dark Support   */
+/* ===================================== */
+:root {
+  --color-bg: 255, 255, 255;
+  --color-text: 17, 24, 39;
+  --color-primary: 99, 102, 241;
+  --color-secondary: 168, 85, 247;
+  --color-accent: 249, 115, 22;
+  --color-muted: 107, 114, 128;
+}
+
+.dark {
+  --color-bg: 17, 24, 39;
+  --color-text: 243, 244, 246;
+  --color-primary: 139, 92, 246;
+  --color-secondary: 59, 130, 246;
+  --color-accent: 252, 211, 77;
+  --color-muted: 107, 114, 128;
+}
+
+html {
+  background-color: rgb(var(--color-bg));
+  color: rgb(var(--color-text));
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* ===================================== */
+/* Container & Layout                    */
+/* ===================================== */
+@layer components {
+  .container {
+    @apply mx-auto px-4 sm:px-6 lg:px-8;
+    max-width: 100%;
+  }
+  @screen sm {
+    .container {
+      max-width: 640px;
+    }
+  }
+  @screen md {
+    .container {
+      max-width: 768px;
+    }
+  }
+  @screen lg {
+    .container {
+      max-width: 1024px;
+    }
+  }
+  @screen xl {
+    .container {
+      max-width: 1280px;
+    }
+  }
+}
+
+/* ===================================== */
+/* Custom Utilities                      */
+/* ===================================== */
+@layer utilities {
+  /* Line-clamp variants */
+  .line-clamp-1 { @apply overflow-hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
+  .line-clamp-2 { @apply overflow-hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .line-clamp-3 { @apply overflow-hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+
+  /* Truncate ellipsis */
+  .text-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Aspect ratio utilities (escaped slash) */
+  .aspect-16\/9 { aspect-ratio: 16 / 9; }
+  .aspect-4\/3  { aspect-ratio: 4 / 3; }
+  .aspect-1\/1  { aspect-ratio: 1 / 1; }
+
+  /* Focus ring & accessible outline */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+    --tw-ring-color: rgb(var(--color-primary));
+    --tw-ring-offset-color: rgb(var(--color-bg));
+    --tw-ring-offset-width: 2px;
+  }
+
+  /* Button interactions */
+  .btn-hover { @apply transition transform duration-200 ease-out; }
+  .btn-hover:hover { @apply scale-105 shadow-lg; }
+  .btn-hover:active { @apply scale-95; }
+
+  /* Card hover effect */
+  .card-hover { @apply transition transform duration-300; }
+  .card-hover:hover { @apply -translate-y-1 shadow-2xl; }
+
+  /* Dot background pattern */
+  .bg-dots { background-image: radial-gradient(rgba(var(--color-text),0.05) 1px, transparent 1px); background-size: 20px 20px; }
+
+  /* Scroll-triggered fade/slide */
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+  .animate-slide-down {
+    animation: slideDown 0.5s ease-out forwards;
+  }
+}
+
+/* ===================================== */
+/* Scrollbar Styles                       */
+/* ===================================== */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: rgba(var(--color-text), 0.05); }
+::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--color-muted), 0.5);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background-color: rgba(var(--color-muted), 0.7); }
+
+/* ===================================== */
+/* Video.js Player Overrides             */
+/* ===================================== */
+.video-js .vjs-control-bar { background-color: rgba(0, 0, 0, 0.7) !important; }
+.video-js .vjs-big-play-button {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  border: 2px solid #fff;
+  border-radius: 9999px;
+  width: 60px; height: 60px;
+  font-size: 24px;
+  transition: background-color 0.3s ease;
+}
+.video-js:hover .vjs-big-play-button { background-color: rgba(0, 0, 0, 0.7) !important; }
+
+/* ===================================== */
+/* Keyframes                               */
+/* ===================================== */
+@keyframes scrollBg {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-20%); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom styles for video player animations */
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+}
+
+.video-wrapper .video-js {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.buffering-overlay,
+.play-pause-overlay,
+.fullscreen-overlay,
+.playback-speed-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 2em;
+  z-index: 10;
+  pointer-events: none; /* Allow clicks to pass through to the video player */
+}
+
+.buffering-overlay {
+  flex-direction: column;
+  gap: 15px;
+}
+
+.spinner {
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid #fff;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.play-pause-overlay svg {
+  width: 100px;
+  height: 100px;
+  fill: white;
+  filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+}
+
+.playback-speed-overlay,
+.fullscreen-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+  font-size: 1.5em;
+  border-radius: 8px;
+  padding: 10px 20px;
+  width: auto;
+  height: auto;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
