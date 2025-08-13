@@ -1,6 +1,7 @@
 package com.CodeWithRishu.SpringAI.controller;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
@@ -12,15 +13,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/openai")
+@RequestMapping("/chat")
 @CrossOrigin(origins = "*")
-public class OpenAIController {
+public class ChatController {
 
     private final VectorStore vectorStore;
     private final EmbeddingModel embeddingModel;
     private final ChatClient chatClient;
 
-    public OpenAIController(VectorStore vectorStore, EmbeddingModel embeddingModel, ChatClient.Builder chatClient) {
+    public ChatController(VectorStore vectorStore, EmbeddingModel embeddingModel, ChatClient.Builder chatClient) {
         this.vectorStore = vectorStore;
         this.embeddingModel = embeddingModel;
         this.chatClient = chatClient.build();
@@ -97,5 +98,14 @@ public class OpenAIController {
     @PostMapping("/product")
     public List<Document> getProducts(@RequestParam String text) {
         return vectorStore.similaritySearch(SearchRequest.builder().query(text).topK(2).build());
+    }
+
+    @PostMapping("/ask")
+    public String getAnswerUsingRag(@RequestParam String query) {
+        return chatClient
+                .prompt(query)
+                .advisors(new QuestionAnswerAdvisor(vectorStore))
+                .call()
+                .content();
     }
 }
