@@ -8,15 +8,13 @@ function FavoritesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-3">
-        <FaHeart className="text-3xl text-red-500" />
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Favorites
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Your favorite videos ({favorites.length})
-          </p>
+      <div className="page-hero">
+        <div className="relative z-10 flex items-center space-x-3">
+          <FaHeart className="text-3xl text-pink-300" />
+          <div>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Favorites</h1>
+            <p className="text-white/90">Your favorite videos ({favorites.length})</p>
+          </div>
         </div>
       </div>
 

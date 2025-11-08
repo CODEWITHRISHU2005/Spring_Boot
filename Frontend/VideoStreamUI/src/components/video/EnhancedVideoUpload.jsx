@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from "react";
-import { FaCloudUploadAlt, FaTimes, FaCheck, FaExclamationTriangle, FaVideo, FaFile, FaImage } from "react-icons/fa";
-import { Button, Card, Label, TextInput, Textarea, Progress, Alert, Badge } from "flowbite-react";
+import { FaCloudUploadAlt, FaTimes, FaCheck, FaExclamationTriangle, FaVideo, FaImage, FaFileVideo, FaSpinner } from "react-icons/fa";
+import { Button, Label, TextInput, Textarea, Progress, Alert, Badge } from "flowbite-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { videoAPI } from "../../utils/api";
 import { validateVideoFile, validateImageFile, formatFileSize } from "../../utils/videoUtils";
 import toast from "react-hot-toast";
@@ -12,6 +13,8 @@ function EnhancedVideoUpload() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [meta, setMeta] = useState({
     title: "",
     description: "",
@@ -61,11 +64,15 @@ function EnhancedVideoUpload() {
     setSelectedVideoFile(file);
     setValidationErrors(prev => ({ ...prev, videoFile: null }));
     
+    // Create preview
+    const url = URL.createObjectURL(file);
+    setVideoPreview(url);
+    
     // Auto-fill title if empty
     if (!meta.title) {
       setMeta(prev => ({
         ...prev,
-        title: file.name.replace(/\.[^/.]+$/, "") // Remove file extension
+        title: file.name.replace(/\.[^/.]+$/, "")
       }));
     }
   };
@@ -81,6 +88,10 @@ function EnhancedVideoUpload() {
 
     setSelectedImageFile(file);
     setValidationErrors(prev => ({ ...prev, imageFile: null }));
+    
+    // Create preview
+    const url = URL.createObjectURL(file);
+    setImagePreview(url);
   };
 
   const handleVideoInputChange = (e) => {
@@ -104,7 +115,6 @@ function EnhancedVideoUpload() {
       [name]: value
     }));
     
-    // Clear validation error when user starts typing
     if (validationErrors[name]) {
       setValidationErrors(prev => ({
         ...prev,
@@ -174,11 +184,32 @@ function EnhancedVideoUpload() {
       
     } catch (error) {
       console.error('Upload error:', error);
+      
+      let errorMessage = 'Upload failed. Please try again.';
+      
+      if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
+        errorMessage = 'Network error. Please check your connection and ensure the server is running.';
+      } else if (error.response?.status === 413) {
+        errorMessage = 'File too large. Please reduce the file size and try again.';
+      } else if (error.response?.status === 415) {
+        errorMessage = 'Unsupported file type. Please use supported video formats.';
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Authentication failed. Please login again.';
+      } else if (error.response?.status === 403) {
+        errorMessage = 'Access denied. You do not have permission to upload videos.';
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Server error. Please try again later.';
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       setUploadStatus({
         type: 'error',
-        message: error.response?.data?.message || 'Upload failed. Please try again.'
+        message: errorMessage
       });
-      toast.error("Upload failed. Please try again.");
+      toast.error(errorMessage);
     } finally {
       setIsUploading(false);
     }
@@ -187,6 +218,14 @@ function EnhancedVideoUpload() {
   const resetForm = () => {
     setSelectedVideoFile(null);
     setSelectedImageFile(null);
+    if (videoPreview) {
+      URL.revokeObjectURL(videoPreview);
+      setVideoPreview(null);
+    }
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview(null);
+    }
     setMeta({
       title: "",
       description: "",
@@ -205,6 +244,10 @@ function EnhancedVideoUpload() {
   };
 
   const removeVideoFile = () => {
+    if (videoPreview) {
+      URL.revokeObjectURL(videoPreview);
+      setVideoPreview(null);
+    }
     setSelectedVideoFile(null);
     setValidationErrors(prev => ({ ...prev, videoFile: null }));
     if (videoInputRef.current) {
@@ -213,6 +256,10 @@ function EnhancedVideoUpload() {
   };
 
   const removeImageFile = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview(null);
+    }
     setSelectedImageFile(null);
     setValidationErrors(prev => ({ ...prev, imageFile: null }));
     if (imageInputRef.current) {
@@ -220,97 +267,31 @@ function EnhancedVideoUpload() {
     }
   };
 
-  const getVideoFileIcon = () => {
-    if (!selectedVideoFile) return <FaVideo className="text-4xl text-gray-400" />;
-    
-    const fileType = selectedVideoFile.type;
-    if (fileType.startsWith('video/')) {
-      return <FaVideo className="text-4xl text-blue-500" />;
-    }
-    return <FaFile className="text-4xl text-gray-400" />;
-  };
-
-  const getImageFileIcon = () => {
-    if (!selectedImageFile) return <FaImage className="text-4xl text-gray-400" />;
-    
-    const fileType = selectedImageFile.type;
-    if (fileType.startsWith('image/')) {
-      return <FaImage className="text-4xl text-blue-500" />;
-    }
-    return <FaFile className="text-4xl text-gray-400" />;
-  };
-
   return (
-    <div className="max-w-2xl mx-auto">
-      <Card className="shadow-lg">
-        <div className="flex items-center space-x-2 mb-6">
-          <FaCloudUploadAlt className="text-2xl text-blue-500" />
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Upload Video
-          </h2>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Video File Upload Area */}
+    <div className="max-w-4xl mx-auto">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+      >
+        <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-8">
+          {/* Video File Upload */}
           <div>
-            <Label htmlFor="video-file-upload" value="Video File *" />
-            
+            <Label htmlFor="video-file-upload" value="Video File" className="mb-3 text-base font-semibold text-gray-900 dark:text-white" />
             <div
-              className={`mt-2 border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+              className={`relative border-2 border-dashed rounded-xl transition-all duration-300 ${
                 isDragOver
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                  : "border-gray-300 dark:border-gray-600 hover:border-gray-400"
+                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.01] shadow-lg"
+                  : validationErrors.videoFile
+                  ? "border-red-300 dark:border-red-600 bg-red-50/50 dark:bg-red-900/10"
+                  : "border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 bg-gray-50/50 dark:bg-gray-700/30"
               }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
+              onClick={() => !selectedVideoFile && videoInputRef.current?.click()}
             >
-              {selectedVideoFile ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-center space-x-3">
-                    {getVideoFileIcon()}
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {selectedVideoFile.name}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatFileSize(selectedVideoFile.size)}
-                      </p>
-                    </div>
-                    <Button
-                      size="sm"
-                      color="red"
-                      onClick={removeVideoFile}
-                      className="ml-2"
-                    >
-                      <FaTimes />
-                    </Button>
-                  </div>
-                  
-                  <div className="flex items-center justify-center space-x-2">
-                    <Badge color="green" size="sm">
-                      <FaCheck className="mr-1" />
-                      Video file selected
-                    </Badge>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <FaCloudUploadAlt className="mx-auto text-4xl text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      <span className="font-medium text-blue-600 dark:text-blue-400">
-                        Click to upload
-                      </span>{" "}
-                      or drag and drop
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      MP4, WebM, AVI up to 500MB
-                    </p>
-                  </div>
-                </div>
-              )}
-              
               <input
                 ref={videoInputRef}
                 id="video-file-upload"
@@ -321,85 +302,115 @@ function EnhancedVideoUpload() {
                 className="hidden"
               />
               
-              {!selectedVideoFile && (
-                <Button
-                  type="button"
-                  color="gray"
-                  onClick={() => videoInputRef.current?.click()}
-                  className="mt-4"
-                >
-                  Choose Video File
-                </Button>
-              )}
+              <AnimatePresence mode="wait">
+                {selectedVideoFile ? (
+                  <motion.div
+                    key="selected"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="p-6"
+                  >
+                    <div className="flex items-start gap-4">
+                      {videoPreview ? (
+                        <div className="relative w-32 h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+                          <video
+                            src={videoPreview}
+                            className="w-full h-full object-cover"
+                            muted
+                          />
+                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <FaFileVideo className="text-white text-xl" />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-32 h-20 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                          <FaVideo className="text-white text-2xl" />
+                        </div>
+                      )}
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                              {selectedVideoFile.name}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              {formatFileSize(selectedVideoFile.size)}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeVideoFile();
+                            }}
+                            className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                          >
+                            <FaTimes />
+                          </button>
+                        </div>
+                        <Badge color="success" size="sm" className="mt-2">
+                          <FaCheck className="mr-1" />
+                          Video selected
+                        </Badge>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="p-12 text-center cursor-pointer"
+                  >
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 flex items-center justify-center">
+                        <FaCloudUploadAlt className="text-3xl text-blue-500 dark:text-blue-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                          Click to upload or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          MP4, WebM, AVI up to 500MB
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
             
             {validationErrors.videoFile && (
-              <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+              <motion.p
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1"
+              >
+                <FaExclamationTriangle className="text-xs" />
                 {validationErrors.videoFile}
-              </p>
+              </motion.p>
             )}
           </div>
 
-          {/* Thumbnail Image Upload Area */}
+          {/* Thumbnail Upload */}
           <div>
-            <Label htmlFor="image-file-upload" value="Thumbnail Image *" />
-            
+            <Label htmlFor="image-file-upload" value="Thumbnail Image" className="mb-3 text-base font-semibold text-gray-900 dark:text-white" />
             <div
-              className={`mt-2 border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+              className={`relative border-2 border-dashed rounded-xl transition-all duration-300 ${
                 isDragOver
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                  : "border-gray-300 dark:border-gray-600 hover:border-gray-400"
+                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.01]"
+                  : validationErrors.imageFile
+                  ? "border-red-300 dark:border-red-600 bg-red-50/50 dark:bg-red-900/10"
+                  : "border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 bg-gray-50/50 dark:bg-gray-700/30"
               }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
+              onClick={() => !selectedImageFile && imageInputRef.current?.click()}
             >
-              {selectedImageFile ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-center space-x-3">
-                    {getImageFileIcon()}
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {selectedImageFile.name}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatFileSize(selectedImageFile.size)}
-                      </p>
-                    </div>
-                    <Button
-                      size="sm"
-                      color="red"
-                      onClick={removeImageFile}
-                      className="ml-2"
-                    >
-                      <FaTimes />
-                    </Button>
-                  </div>
-                  
-                  <div className="flex items-center justify-center space-x-2">
-                    <Badge color="green" size="sm">
-                      <FaCheck className="mr-1" />
-                      Image file selected
-                    </Badge>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <FaCloudUploadAlt className="mx-auto text-4xl text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      <span className="font-medium text-blue-600 dark:text-blue-400">
-                        Click to upload
-                      </span>{" "}
-                      or drag and drop
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      PNG, JPG, GIF up to 5MB
-                    </p>
-                  </div>
-                </div>
-              )}
-              
               <input
                 ref={imageInputRef}
                 id="image-file-upload"
@@ -410,118 +421,208 @@ function EnhancedVideoUpload() {
                 className="hidden"
               />
               
-              {!selectedImageFile && (
-                <Button
-                  type="button"
-                  color="gray"
-                  onClick={() => imageInputRef.current?.click()}
-                  className="mt-4"
-                >
-                  Choose Image File
-                </Button>
-              )}
+              <AnimatePresence mode="wait">
+                {selectedImageFile ? (
+                  <motion.div
+                    key="selected"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="p-6"
+                  >
+                    <div className="flex items-start gap-4">
+                      {imagePreview ? (
+                        <div className="relative w-32 h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+                          <img
+                            src={imagePreview}
+                            alt="Thumbnail preview"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-32 h-20 rounded-lg bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center flex-shrink-0">
+                          <FaImage className="text-white text-2xl" />
+                        </div>
+                      )}
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                              {selectedImageFile.name}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              {formatFileSize(selectedImageFile.size)}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeImageFile();
+                            }}
+                            className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                          >
+                            <FaTimes />
+                          </button>
+                        </div>
+                        <Badge color="success" size="sm" className="mt-2">
+                          <FaCheck className="mr-1" />
+                          Thumbnail selected
+                        </Badge>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="p-8 text-center cursor-pointer"
+                  >
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-100 to-teal-100 dark:from-green-900/30 dark:to-teal-900/30 flex items-center justify-center">
+                        <FaImage className="text-xl text-green-500 dark:text-green-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                          Click to upload or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          PNG, JPG, GIF up to 5MB
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
             
             {validationErrors.imageFile && (
-              <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+              <motion.p
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1"
+              >
+                <FaExclamationTriangle className="text-xs" />
                 {validationErrors.imageFile}
-              </p>
+              </motion.p>
             )}
           </div>
 
           {/* Video Metadata */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label htmlFor="title" value="Title *" />
+              <Label htmlFor="title" value="Title" className="mb-2 text-sm font-semibold" />
               <TextInput
                 id="title"
                 name="title"
                 value={meta.title}
                 onChange={handleMetaChange}
                 placeholder="Enter video title"
-                className="mt-1"
                 color={validationErrors.title ? "failure" : "gray"}
                 helperText={validationErrors.title}
+                required
               />
             </div>
             
             <div>
-              <Label htmlFor="tags" value="Tags" />
+              <Label htmlFor="tags" value="Tags (optional)" className="mb-2 text-sm font-semibold" />
               <TextInput
                 id="tags"
                 name="tags"
                 value={meta.tags}
                 onChange={handleMetaChange}
-                placeholder="Enter tags (comma separated)"
-                className="mt-1"
+                placeholder="e.g., tech, tutorial, music"
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="description" value="Description" />
+            <Label htmlFor="description" value="Description (optional)" className="mb-2 text-sm font-semibold" />
             <Textarea
               id="description"
               name="description"
               value={meta.description}
               onChange={handleMetaChange}
-              placeholder="Enter video description..."
+              placeholder="Tell viewers about your video..."
               rows={4}
-              className="mt-1"
               color={validationErrors.description ? "failure" : "gray"}
               helperText={validationErrors.description}
             />
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600">
             <input
               type="checkbox"
               id="isPublic"
               name="isPublic"
               checked={meta.isPublic}
               onChange={(e) => setMeta(prev => ({ ...prev, isPublic: e.target.checked }))}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2"
             />
-            <Label htmlFor="isPublic" value="Make video public" />
+            <Label htmlFor="isPublic" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+              Make this video public
+            </Label>
           </div>
 
           {/* Upload Progress */}
-          {isUploading && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span>Uploading...</span>
-                <span>{uploadProgress}%</span>
-              </div>
-              <Progress progress={uploadProgress} color="blue" size="lg" />
-            </div>
-          )}
+          <AnimatePresence>
+            {isUploading && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-3 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+              >
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                    <FaSpinner className="animate-spin" />
+                    <span className="font-medium">Uploading...</span>
+                  </div>
+                  <span className="font-semibold text-blue-700 dark:text-blue-300">{uploadProgress}%</span>
+                </div>
+                <Progress progress={uploadProgress} color="blue" size="lg" />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Upload Status */}
-          {uploadStatus && (
-            <Alert
-              color={uploadStatus.type === 'success' ? 'success' : uploadStatus.type === 'error' ? 'failure' : 'info'}
-              className="mt-4"
-            >
-              <div className="flex items-center space-x-2">
-                {uploadStatus.type === 'success' ? (
-                  <FaCheck className="text-green-500" />
-                ) : uploadStatus.type === 'error' ? (
-                  <FaExclamationTriangle className="text-red-500" />
-                ) : (
-                  <FaCloudUploadAlt className="text-blue-500" />
-                )}
-                <span>{uploadStatus.message}</span>
-              </div>
-            </Alert>
-          )}
+          <AnimatePresence>
+            {uploadStatus && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <Alert
+                  color={uploadStatus.type === 'success' ? 'success' : uploadStatus.type === 'error' ? 'failure' : 'info'}
+                  className="rounded-lg"
+                >
+                  <div className="flex items-center gap-2">
+                    {uploadStatus.type === 'success' ? (
+                      <FaCheck className="text-green-500" />
+                    ) : uploadStatus.type === 'error' ? (
+                      <FaExclamationTriangle className="text-red-500" />
+                    ) : (
+                      <FaCloudUploadAlt className="text-blue-500" />
+                    )}
+                    <span className="text-sm">{uploadStatus.message}</span>
+                  </div>
+                </Alert>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end space-x-3">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Button
               type="button"
               color="gray"
               onClick={resetForm}
               disabled={isUploading}
+              className="px-6"
             >
               Reset
             </Button>
@@ -530,13 +631,20 @@ function EnhancedVideoUpload() {
               type="submit"
               color="blue"
               disabled={!selectedVideoFile || !selectedImageFile || isUploading}
-              className="min-w-[100px]"
+              className="px-8 min-w-[140px]"
             >
-              {isUploading ? "Uploading..." : "Upload Video"}
+              {isUploading ? (
+                <span className="flex items-center gap-2">
+                  <FaSpinner className="animate-spin" />
+                  Uploading...
+                </span>
+              ) : (
+                "Upload Video"
+              )}
             </Button>
           </div>
         </form>
-      </Card>
+      </motion.div>
     </div>
   );
 }

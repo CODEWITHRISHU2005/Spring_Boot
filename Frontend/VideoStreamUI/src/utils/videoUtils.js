@@ -1,8 +1,42 @@
 import { formatDistanceToNow } from 'date-fns';
 
 // Format video duration from seconds to MM:SS or HH:MM:SS
-export const formatDuration = (seconds) => {
-  if (!seconds || isNaN(seconds)) return '0:00';
+export const formatDuration = (duration) => {
+  if (!duration && duration !== 0) return '0:00';
+  
+  let seconds = 0;
+  
+  // Handle different input formats
+  if (typeof duration === 'string') {
+    // Check if it's already in HH:MM:SS or MM:SS format
+    if (duration.includes(':')) {
+      const parts = duration.split(':').map(Number);
+      if (parts.length === 3) {
+        // HH:MM:SS format
+        seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+      } else if (parts.length === 2) {
+        // MM:SS format
+        seconds = parts[0] * 60 + parts[1];
+      } else {
+        return duration; // Return as-is if format is unknown
+      }
+    } else {
+      // Try to parse as number string
+      seconds = parseFloat(duration);
+    }
+  } else if (typeof duration === 'number') {
+    // If duration is in milliseconds (greater than a reasonable max seconds), convert
+    if (duration > 86400) { // More than 24 hours in seconds, likely milliseconds
+      seconds = duration / 1000;
+    } else {
+      seconds = duration;
+    }
+  } else {
+    return '0:00';
+  }
+  
+  // Validate the converted seconds
+  if (isNaN(seconds) || seconds < 0) return '0:00';
   
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);

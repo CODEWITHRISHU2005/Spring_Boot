@@ -1,8 +1,9 @@
+// Import warning suppression first, before any VideoJS plugins
+import '../utils/suppressVideoJSWarnings';
+
 import React, {
   useEffect,
-  useLayoutEffect,
   useRef,
-  useMemo,
   useState,
 } from 'react';
 import videojs from 'video.js';
@@ -10,9 +11,14 @@ import Hls from 'hls.js';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import 'video.js/dist/video-js.css';
+
+// Import qualityLevels plugin - it auto-registers on import
+// Warning suppression is handled by suppressVideoJSWarnings.js
 import 'videojs-contrib-quality-levels';
+
 import HlsQualitySelector from 'videojs-hls-quality-selector/dist/videojs-hls-quality-selector.js';
 
+// Register hlsQualitySelector plugin only if not already registered
 if (!videojs.getPlugin('hlsQualitySelector')) {
   videojs.registerPlugin('hlsQualitySelector', HlsQualitySelector);
 }
@@ -51,7 +57,6 @@ export default function VideoPlayer({
   const videoRef = useRef(null);
   const playerRef = useRef(null);
   const hlsRef = useRef(null);
-  const isVideoInitialized = useRef(false);
   const qualitySelectorInitialized = useRef(false);
   const stallRetriesRef = useRef(0);
 
@@ -60,46 +65,54 @@ export default function VideoPlayer({
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const container = containerRef.current;
-    if (!container || isVideoInitialized.current) return;
+    if (!container || videoRef.current) return;
 
     const videoEl = document.createElement('video');
     videoEl.className = 'video-js vjs-default-skin';
     videoEl.setAttribute('playsinline', '');
     videoEl.setAttribute('crossorigin', 'anonymous');
-    videoEl.setAttribute('aria-label', videoData?.title || 'Video player');
     videoEl.setAttribute('tabIndex', '0');
-    container.appendChild(videoEl);
+    videoEl.setAttribute('aria-label', videoData?.title || 'Video player');
 
+    container.appendChild(videoEl);
     videoRef.current = videoEl;
-    isVideoInitialized.current = true;
 
     return () => {
-      videoEl.remove();
-      videoRef.current = null;
-      isVideoInitialized.current = false;
-    };
-  }, [videoData]);
+      if (playerRef.current) {
+        playerRef.current.dispose();
+        playerRef.current = null;
+      }
 
-  if (!videoData?.url) {
-    return (
-      <div className="video-container">
-        <div className="video-wrapper">
-          <div className="no-video">No video available</div>
-        </div>
-      </div>
-    );
-  }
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+
+      qualitySelectorInitialized.current = false;
+      stallRetriesRef.current = 0;
+
+      videoRef.current?.remove();
+      videoRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!videoRef.current) return;
+    videoRef.current.setAttribute('aria-label', videoData?.title || 'Video player');
+  }, [videoData?.title]);
 
   useEffect(() => {
     const videoEl = videoRef.current;
-    if (!videoEl) return;
+    if (!videoEl || playerRef.current) return;
+
+    const shouldAutoplay = Boolean(userPreferences?.autoplay);
 
     const player = videojs(videoEl, {
       controls: true,
-      autoplay: userPreferences.autoplay,
-      muted: userPreferences.autoplay,
+      autoplay: shouldAutoplay,
+      muted: shouldAutoplay,
       preload: 'auto',
       fluid: true,
       aspectRatio: '16:9',
@@ -140,22 +153,47 @@ export default function VideoPlayer({
       hlsRef.current = null;
       qualitySelectorInitialized.current = false;
     };
-  }, [userPreferences.autoplay]);
+  }, [userPreferences?.autoplay]);
+
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
+
+    const shouldAutoplay = Boolean(userPreferences?.autoplay);
+    player.autoplay(shouldAutoplay);
+    player.muted(shouldAutoplay);
+  }, [userPreferences?.autoplay]);
 
   useEffect(() => {
     const player = playerRef.current;
     const videoEl = videoRef.current;
-    if (!player || !videoEl) return;
+    if (!player || !videoEl) return undefined;
 
-    const src = videoData.url;
+    if (!videoData?.url) {
+      setIsBuffering(false);
+      player.pause();
+      player.poster('');
+      hlsRef.current?.destroy();
+      hlsRef.current = null;
+      qualitySelectorInitialized.current = false;
+      return undefined;
+    }
+
+    const src = videoData.hlsUrl || videoData.url;
     const isHls = /\.m3u8(\?.*)?$/i.test(src);
 
-    hlsRef.current?.destroy();
-    hlsRef.current = null;
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+
     stallRetriesRef.current = 0;
     setIsBuffering(false);
+    qualitySelectorInitialized.current = false;
 
     player.poster(videoData.thumbnailUrl || '');
+
+    let cleanup;
 
     if (isHls) {
       if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
@@ -163,9 +201,6 @@ export default function VideoPlayer({
       } else if (Hls.isSupported()) {
         const hls = new Hls(HLS_CONFIG);
         hlsRef.current = hls;
-
-        hls.loadSource(src);
-        hls.attachMedia(videoEl);
 
         const onManifestParsed = () => {
           if (!qualitySelectorInitialized.current) {
@@ -179,14 +214,12 @@ export default function VideoPlayer({
           }
         };
 
-        hls.on(Hls.Events.MANIFEST_PARSED, onManifestParsed);
-
-        hls.on(Hls.Events.FRAG_BUFFERED, () => {
+        const onFragBuffered = () => {
           setIsBuffering(false);
           stallRetriesRef.current = 0;
-        });
+        };
 
-        hls.on(Hls.Events.ERROR, (evt, data) => {
+        const onError = (evt, data) => {
           console.error(
             `[HLS.js error] event=${evt}, type=${data.type}, details=${data.details}, fatal=${data.fatal}`
           );
@@ -230,14 +263,27 @@ export default function VideoPlayer({
                 break;
             }
           }
-        });
+        };
 
-        return () => {
+        hls.on(Hls.Events.MANIFEST_PARSED, onManifestParsed);
+        hls.on(Hls.Events.FRAG_BUFFERED, onFragBuffered);
+        hls.on(Hls.Events.ERROR, onError);
+
+        hls.loadSource(src);
+        hls.attachMedia(videoEl);
+
+        cleanup = () => {
           hls.off(Hls.Events.MANIFEST_PARSED, onManifestParsed);
+          hls.off(Hls.Events.FRAG_BUFFERED, onFragBuffered);
+          hls.off(Hls.Events.ERROR, onError);
           hls.destroy();
+          if (hlsRef.current === hls) {
+            hlsRef.current = null;
+          }
         };
       } else {
         console.error('HLS not supported');
+        player.src({ src, type: videoData.contentType || 'video/mp4' });
       }
     } else {
       player.src({
@@ -245,6 +291,8 @@ export default function VideoPlayer({
         type: videoData.contentType || 'video/mp4',
       });
     }
+
+    return cleanup;
   }, [videoData]);
 
   useEffect(() => {
@@ -265,68 +313,76 @@ export default function VideoPlayer({
   return (
     <div className="video-container">
       <div className="video-wrapper">
-        <AnimatePresence>
-          {isBuffering && (
-            <motion.div
-              key="buffering"
-              className="buffering-overlay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <div className="spinner"></div>
-              <span>Buffering…</span>
-            </motion.div>
-          )}
+        <div ref={containerRef} className="video-host" />
+        <div className="video-overlay-layer">
+          <AnimatePresence>
+            {isBuffering && (
+              <motion.div
+                key="buffering"
+                className="buffering-overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <div className="spinner"></div>
+                <span>Buffering…</span>
+              </motion.div>
+            )}
 
-          {showPlayPauseOverlay && (
-            <motion.div
-              key="playpause"
-              className="play-pause-overlay"
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.5 }}
-              transition={{ type: 'spring', damping: 15, stiffness: 300 }}
-            >
-              {isPlaying ? (
-                <svg className="play-icon" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              ) : (
-                <svg className="pause-icon" viewBox="0 0 24 24">
-                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                </svg>
-              )}
-            </motion.div>
-          )}
+            {showPlayPauseOverlay && (
+              <motion.div
+                key="playpause"
+                className="play-pause-overlay"
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                transition={{ type: 'spring', damping: 15, stiffness: 300 }}
+              >
+                {isPlaying ? (
+                  <svg className="play-icon" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                ) : (
+                  <svg className="pause-icon" viewBox="0 0 24 24">
+                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                  </svg>
+                )}
+              </motion.div>
+            )}
 
-          {isFullScreen && (
-            <motion.div
-              key="fullscreen"
-              className="fullscreen-overlay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <span>Fullscreen</span>
-            </motion.div>
-          )}
+            {isFullScreen && (
+              <motion.div
+                key="fullscreen"
+                className="fullscreen-overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <span>Fullscreen</span>
+              </motion.div>
+            )}
 
-          {playbackSpeed !== 1 && (
-            <motion.div
-              key="speed"
-              className="playback-speed-overlay"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <span>{playbackSpeed}x</span>
-            </motion.div>
+            {playbackSpeed !== 1 && (
+              <motion.div
+                key="speed"
+                className="playback-speed-overlay"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <span>{playbackSpeed}x</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {!videoData?.url && (
+            <div className="video-empty-overlay">
+              <span>No video available</span>
+            </div>
           )}
-        </AnimatePresence>
-        <div ref={containerRef} />
+        </div>
       </div>
     </div>
   );

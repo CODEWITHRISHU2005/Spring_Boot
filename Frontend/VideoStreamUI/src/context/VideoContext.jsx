@@ -6,7 +6,8 @@ import React, {
   useReducer,
   useEffect,
   useCallback,
-  useMemo
+  useMemo,
+  useRef
 } from 'react';
 import { videoAPI } from '../utils/api';
 import toast from 'react-hot-toast';
@@ -34,7 +35,8 @@ const initialState = {
     volume: 1
   },
   recentlyPlayed: [],
-  favorites: []
+  favorites: [],
+  watchLater: []
 };
 
 function videoReducer(state, action) {
@@ -117,6 +119,24 @@ function videoReducer(state, action) {
     case 'SET_FAVORITES':
       return { ...state, favorites: action.payload };
 
+    case 'ADD_TO_WATCH_LATER': {
+      const exists = state.watchLater.some(v => v.id === action.payload.id);
+      if (exists) return state;
+      return {
+        ...state,
+        watchLater: [action.payload, ...state.watchLater].slice(0, 50)
+      };
+    }
+
+    case 'REMOVE_FROM_WATCH_LATER':
+      return {
+        ...state,
+        watchLater: state.watchLater.filter(v => v.id !== action.payload)
+      };
+
+    case 'SET_WATCH_LATER':
+      return { ...state, watchLater: action.payload };
+
     case 'SET_RECENTLY_PLAYED':
       return { ...state, recentlyPlayed: action.payload };
 
@@ -161,6 +181,9 @@ export const VideoProvider = ({ children }) => {
 
     const favs = localStorage.getItem('favorites');
     if (favs) dispatch({ type: 'SET_FAVORITES', payload: JSON.parse(favs) });
+
+    const watchLater = localStorage.getItem('watchLater');
+    if (watchLater) dispatch({ type: 'SET_WATCH_LATER', payload: JSON.parse(watchLater) });
   }, []);
 
   useEffect(() => {
@@ -175,6 +198,10 @@ export const VideoProvider = ({ children }) => {
     localStorage.setItem('favorites', JSON.stringify(state.favorites));
   }, [state.favorites]);
 
+  useEffect(() => {
+    localStorage.setItem('watchLater', JSON.stringify(state.watchLater));
+  }, [state.watchLater]);
+
   const fetchVideos = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
@@ -186,7 +213,21 @@ export const VideoProvider = ({ children }) => {
         ? payload
         : [];
 
-      const videos = rawList.map(mapVideoDetails).filter(Boolean);
+      const videos = rawList.map(video => {
+        try {
+          return mapVideoDetails(video);
+        } catch (err) {
+          console.error('Error mapping video:', err, 'Video data:', video);
+          return null;
+        }
+      }).filter(Boolean);
+      
+      // Debug: Log first video to check duration
+      if (videos.length > 0 && process.env.NODE_ENV === 'development') {
+        console.log('First mapped video:', videos[0]);
+        console.log('Raw video data sample:', rawList[0]);
+      }
+      
       dispatch({ type: 'SET_VIDEOS', payload: videos });
     } catch (err) {
       console.error('Error fetching videos:', err);
@@ -197,7 +238,11 @@ export const VideoProvider = ({ children }) => {
     }
   }, []);
 
+  const hasFetchedRef = useRef(false);
+
   useEffect(() => {
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
     fetchVideos();
   }, [fetchVideos]);
 
@@ -230,7 +275,17 @@ export const VideoProvider = ({ children }) => {
   }, []);
 
   const playVideo = useCallback(video => {
-    dispatch({ type: 'PLAY_VIDEO', payload: mapVideoDetails(video) });
+    if (!video) {
+      dispatch({ type: 'PLAY_VIDEO', payload: null });
+      return;
+    }
+
+    try {
+      dispatch({ type: 'PLAY_VIDEO', payload: mapVideoDetails(video) });
+    } catch (err) {
+      console.error('Failed to map video details for playback:', err);
+      toast.error('Unable to play this video right now');
+    }
   }, []);
 
   const playPlaylist = useCallback((playlist, startIndex = 0) => {
@@ -250,6 +305,27 @@ export const VideoProvider = ({ children }) => {
     toast.success(exists ? 'Removed from favorites' : 'Added to favorites');
   }, [state.favorites]);
 
+  const addToWatchLater = useCallback(video => {
+    try {
+      const mapped = mapVideoDetails(video);
+      const exists = state.watchLater.some(v => v.id === mapped.id);
+      if (exists) {
+        toast('Already in Watch Later', { icon: 'ℹ️' });
+        return;
+      }
+      dispatch({ type: 'ADD_TO_WATCH_LATER', payload: mapped });
+      toast.success('Saved to Watch Later');
+    } catch (err) {
+      console.error('Failed to add to watch later:', err);
+      toast.error('Unable to save for later');
+    }
+  }, [state.watchLater]);
+
+  const removeFromWatchLater = useCallback(videoId => {
+    dispatch({ type: 'REMOVE_FROM_WATCH_LATER', payload: videoId });
+    toast.success('Removed from Watch Later');
+  }, []);
+
   const updateUserPreferences = useCallback(prefs => {
     dispatch({ type: 'SET_USER_PREFERENCES', payload: prefs });
   }, []);
@@ -263,6 +339,8 @@ export const VideoProvider = ({ children }) => {
     nextVideo,
     previousVideo,
     toggleFavorite,
+    addToWatchLater,
+    removeFromWatchLater,
     updateUserPreferences
   }), [
     state,
@@ -273,6 +351,8 @@ export const VideoProvider = ({ children }) => {
     nextVideo,
     previousVideo,
     toggleFavorite,
+    addToWatchLater,
+    removeFromWatchLater,
     updateUserPreferences
   ]);
 

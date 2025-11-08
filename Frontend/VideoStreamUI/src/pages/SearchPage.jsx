@@ -8,13 +8,11 @@ function SearchPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Search Videos
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Find the videos you're looking for
-        </p>
+      <div className="page-hero">
+        <div className="relative z-10">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Search Videos</h1>
+          <p className="text-white/90">Find the videos you're looking for</p>
+        </div>
       </div>
 
       <VideoSearch />
